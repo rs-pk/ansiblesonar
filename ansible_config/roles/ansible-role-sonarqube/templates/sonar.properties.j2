@@ -8,9 +8,9 @@
 {% if sonar_db_embedded %}
 sonar.embeddedDatabase.port={{ sonar_db_embedded_port | default('9092') }}
 {% else %}
-sonar.jdbc.username={{ sonar_db_user }}
-sonar.jdbc.password={{ sonar_db_pass }}
-sonar.jdbc.url={{ sonar_jdbc_url }}
+sonar.jdbc.username=sonar
+sonar.jdbc.password=password
+sonar.jdbc.url=jdbc:postgresql://localhost:5432/sonarqube
 {% endif %}
 
 sonar.jdbc.maxActive={{ sonar_jdbc_maxactive | default('60') }}
@@ -76,7 +76,7 @@ ldap.group.idAttribute={{ sonar_ldap.group_id_attribute | default('cn') }}
 
 #--------------------------------------------------------------------------------------------------
 # COMPUTE ENGINE
-
+`
 {% if (sonar_ce_java_opts is defined) and (sonar_ce_java_opts | length > 0) %}
 sonar.ce.javaOpts={{ sonar_ce_java_opts }}
 {% endif %}

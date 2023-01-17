@@ -18,5 +18,3 @@
   hosts: localhost
   roles:
     - ansible-role-sonarqube
-
-
