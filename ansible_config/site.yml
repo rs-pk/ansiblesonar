@@ -26,7 +26,7 @@
     - name: "Create app database"
       postgresql_db:
         state: present
-        name: "sonar"
+        name: "sonarqube"
       become: true
       become_user: postgres
 
@@ -41,7 +41,7 @@
     - name: "Grant db user access to app db"
       postgresql_privs:
         type: database
-        database: "sonar"
+        database: "sonarqube"
         roles: "sonar"
         grant_option: no
         privs: all
