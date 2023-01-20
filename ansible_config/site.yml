@@ -11,9 +11,10 @@
       with_items:
         - postgresql
         - postgresql-contrib
+        - python3-pip
 
     - name: "Install Python packages"
-      pip3: "name={{ item }}  state=present"
+      pip: "name={{ item }}  state=present"
       with_items:
         - psycopg2-binary
         
