@@ -12,10 +12,6 @@
         - postgresql
         - postgresql-contrib
 
-    - name: "Install Python packages"
-      pip: "name={{ item }}  state=present"
-      with_items:
-        - psycopg2-binary
         
     - name: "Start and enable services"
       service: "name={{ item }} state=started enabled=yes"
