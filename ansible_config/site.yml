@@ -7,16 +7,10 @@
       apt_repository: repo='ppa:openjdk-r/ppa'
       
     - name: "Install packages"
-      dnf: "name={{ item }} state=present"
+      apt: "name={{ item }} state=present"
       with_items:
         - postgresql
         - postgresql-server
-
-    - name: Install Python 3
-      raw: dnf -y install python3
-      
-    - name: Bootstrap a host without python2 installed
-      raw: dnf install -y python2 python2-dnf libselinux-python
 
     - name: "Install Python packages"
       pip: "name={{ item }}  state=present"
