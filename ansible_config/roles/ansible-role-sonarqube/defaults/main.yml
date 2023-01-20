@@ -61,7 +61,7 @@ sonar_db_pass: "password"
 #sonar_jdbc_url=jdbc:oracle:thin:@localhost:1521/XE
 #----- PostgreSQL 8.x/9.x
 # If you don't use the schema named "public", please refer to http://jira.sonarsource.com/browse/SONAR-5000
-sonar_jdbc_url: jdbc:postgresql://localhost/sonar
+sonar_jdbc_url: jdbc:postgresql://localhost:5432/sonar
 
 #----- Microsoft SQLServer 2008/2012/2014 and SQL Azure
 # A database named sonar must exist and its collation must be case-sensitive (CS) and accent-sensitive (AS)
