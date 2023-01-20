@@ -24,23 +24,23 @@
     - name: "Create app database"
       postgresql_db:
         state: present
-        name: "{{ db_name }}"
+        name: "sonar"
       become: true
       become_user: postgres
 
     - name: "Create db user"
       postgresql_user:
         state: present
-        name: "{{ db_user }}"
-        password: "{{ db_password }}"
+        name: "sonar"
+        password: "password"
       become: true
       become_user: postgres
 
     - name: "Grant db user access to app db"
       postgresql_privs:
         type: database
-        database: "{{ db_name }}"
-        roles: "{{ db_user }}"
+        database: "sonar"
+        roles: "sonar"
         grant_option: no
         privs: all
       become: true
