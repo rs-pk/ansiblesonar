@@ -3,4 +3,4 @@
 		sudo apt install ansible -y
 		sudo apt-get install zip unzip
 		sudo git clone https://github.com/rs-pk/ansiblesonar.git
-		sudo ansible-playbook /ansiblesonar/ansible_config/site.yaml
+		sudo ansible-playbook /ansiblesonar/ansible_config/site.yml
