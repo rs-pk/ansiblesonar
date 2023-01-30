@@ -23,6 +23,30 @@
       with_items:
         - postgresql
 
+    - name: "Create app database"
+      postgresql_db:
+        state: present
+        name: "sonarqube"
+      become: true
+      become_user: postgres
+
+    - name: "Create db user"
+      postgresql_user:
+        state: present
+        name: "sonar"
+        password: "password"
+      become: true
+      become_user: postgres
+
+    - name: "Grant db user access to app db"
+      postgresql_privs:
+        type: database
+        database: "sonarqube"
+        roles: "sonar"
+        grant_option: no
+        privs: all
+      become: true
+      become_user: postgres
 
 - name: Install Java 11
   hosts: localhost
@@ -32,6 +56,10 @@
       java_packages:
         - openjdk-11-jdk
 
+- name: Install sonarqube
+  hosts: localhost
+  roles:
+    - ansible-role-sonarqube
 
 - name: Install gitlab-runner
   hosts: localhost
