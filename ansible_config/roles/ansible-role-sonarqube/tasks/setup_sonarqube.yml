@@ -49,6 +49,7 @@
     name: sonar
     state: started
     enabled: yes
+    wait_timeout: 3600
 
 - name: "Ensure SonarQube files permissions"
   file:
