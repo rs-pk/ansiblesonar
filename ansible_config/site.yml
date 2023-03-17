@@ -3,8 +3,8 @@
 
 - hosts: localhost
   tasks:
-    - name: installing repo for Java 8 in Ubuntu
-      apt_repository: repo='ppa:openjdk-r/ppa'
+    # - name: installing repo for Java 8 in Ubuntu
+    #   apt_repository: repo='ppa:openjdk-r/ppa'
       
     - name: "Install packages"
       apt: "name={{ item }} state=present"
@@ -48,7 +48,7 @@
       become: true
       become_user: postgres
 
-- name: Install Java 11
+- name: Install Java 17
   hosts: localhost
   roles:
     - role: ansible-role-java
