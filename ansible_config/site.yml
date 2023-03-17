@@ -1,48 +1,67 @@
 ---
 # This playbook deploys the whole application stack for a sonar.
 
+- hosts: localhost
+  tasks:
+    - name: installing repo for Java 8 in Ubuntu
+      apt_repository: repo='ppa:openjdk-r/ppa'
+      
+    - name: "Install packages"
+      apt: "name={{ item }} state=present"
+      with_items:
+        - postgresql
+        - postgresql-contrib
+        - python3-pip
 
+    - name: "Install Python packages"
+      pip: "name={{ item }}  state=present"
+      with_items:
+        - psycopg2-binary
+        
+    - name: "Start and enable services"
+      service: "name={{ item }} state=started enabled=yes"
+      with_items:
+        - postgresql
+
+    - name: "Create app database"
+      postgresql_db:
+        state: present
+        name: "sonarqube"
+      become: true
+      become_user: postgres
+
+    - name: "Create db user"
+      postgresql_user:
+        state: present
+        name: "sonar"
+        password: "password"
+      become: true
+      become_user: postgres
+
+    - name: "Grant db user access to app db"
+      postgresql_privs:
+        type: database
+        database: "sonarqube"
+        roles: "sonar"
+        grant_option: no
+        privs: all
+      become: true
+      become_user: postgres
+
+- name: Install Java 11
+  hosts: localhost
+  roles:
+    - role: ansible-role-java
+      when: "ansible_os_family == 'Debian'"
+      java_packages:
+        - openjdk-11-jdk
+
+- name: Install sonarqube
+  hosts: localhost
+  roles:
+    - ansible-role-sonarqube
 
 - name: Install gitlab-runner
   hosts: localhost
   roles:
     - ansible-role-gitlab-runner
-
-- hosts: localhost
-
-  become: true
-  tasks:
-    - name: Install required system packages
-      apt:
-        pkg:
-          - apt-transport-https
-          - ca-certificates
-          - curl
-          - software-properties-common
-          - python3-pip
-          - virtualenv
-          - python3-setuptools
-        state: latest
-        update_cache: true
-
-    - name: Add Docker GPG apt Key
-      apt_key:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        state: present
-
-    - name: Add Docker Repository
-      apt_repository:
-        repo: deb https://download.docker.com/linux/ubuntu focal stable
-        state: present
-
-    - name: Update apt and install docker-ce and docker-compose
-      apt:
-        pkg:
-          - docker-ce
-          - docker-compose
-        state: latest
-        update_cache: true
-
-    - name: Install Docker Module for Python
-      pip:
-        name: docker

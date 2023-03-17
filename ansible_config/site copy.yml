@@ -6,39 +6,39 @@
     - name: installing repo for Java 8 in Ubuntu
       apt_repository: repo='ppa:openjdk-r/ppa'
       
-    - name: "Install packages"
-      apt: "name={{ item }} state=present"
-      with_items:
-        - postgresql
-        - postgresql-contrib
-        - python3-pip
+    # - name: "Install packages"
+    #   apt: "name={{ item }} state=present"
+    #   with_items:
+    #     - postgresql
+    #     - postgresql-contrib
+    #     - python3-pip
 
-    - name: "Install Python packages"
-      pip: "name={{ item }}  state=present"
-      with_items:
-        - psycopg2-binary
+    # - name: "Install Python packages"
+    #   pip: "name={{ item }}  state=present"
+    #   with_items:
+    #     - psycopg2-binary
         
-    - name: "Start and enable services"
-      service: "name={{ item }} state=started enabled=yes"
-      with_items:
-        - postgresql
+    # - name: "Start and enable services"
+    #   service: "name={{ item }} state=started enabled=yes"
+    #   with_items:
+    #     - postgresql
 
-    - name: "Create app database"
-      postgresql_db:
-        state: present
-        name: "sonarqube"
-      become: true
-      become_user: postgres
+    # - name: "Create app database"
+    #   postgresql_db:
+    #     state: present
+    #     name: "sonarqube"
+    #   become: true
+    #   become_user: postgres
 
-    - name: "Create db user"
-      postgresql_user:
-        state: present
-        name: "sonar"
-        password: "password"
-      become: true
-      become_user: postgres
+    # - name: "Create db user"
+    #   postgresql_user:
+    #     state: present
+    #     name: "sonar"
+    #     password: "password"
+    #   become: true
+    #   become_user: postgres
 
-    - name: "Grant db user access to app db"
+    # - name: "Grant db user access to app db"
       postgresql_privs:
         type: database
         database: "sonarqube"
@@ -56,12 +56,12 @@
       java_packages:
         - openjdk-11-jdk
 
-- name: Install sonarqube
-  hosts: localhost
-  roles:
-    - ansible-role-sonarqube
+# - name: Install sonarqube
+#   hosts: localhost
+#   roles:
+#     - ansible-role-sonarqube
 
-- name: Install gitlab-runner
+# - name: Install gitlab-runner
   hosts: localhost
   roles:
     - ansible-role-gitlab-runner
