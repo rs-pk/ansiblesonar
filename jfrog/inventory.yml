@@ -28,11 +28,11 @@ all:
                    db_url: "jdbc:postgresql://10.0.0.59:5432/artifactory"
                    db_user: "artifactory"
                    db_password: "Art1fAct0ry"
-                   server_name: "ec2-54-237-207-135.compute-1.amazonaws.com"
+                   server_name: "hostname"
        xray:
            hosts:
                localhost:
-                   jfrog_url: "https://ec2-54-236-201-125.compute-1.amazonaws.com"
+                   jfrog_url: "https://hostname"
                    master_key: "c97b862469de0d94fbb7d48130637a5a"
                    join_key: "9bcca98f375c0728d907cc6ee39d4f02"
                    db_type: "postgresql"
