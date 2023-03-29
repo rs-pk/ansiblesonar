@@ -19,7 +19,7 @@
     shell: /bin/bash
     generate_ssh_key: yes
     ssh_key_bits: 4096
-    password: "cde3CDE#1234"
+    password: "{{ cde3CDE#1234 | password_hash('sha512') }}"
 
 - name: create the artifactory folders
   become: yes
