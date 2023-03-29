@@ -1,0 +1,67 @@
+---
+# This playbook deploys the whole application stack for a sonar.
+
+- hosts: localhost
+  tasks:
+    # - name: installing repo for Java 8 in Ubuntu
+    #   apt_repository: repo='ppa:openjdk-r/ppa'
+      
+    - name: "Install packages"
+      apt: "name={{ item }} state=present"
+      with_items:
+        - postgresql
+        - postgresql-contrib
+        - python3-pip
+
+    - name: "Install Python packages"
+      pip: "name={{ item }}  state=present"
+      with_items:
+        - psycopg2-binary
+        
+    - name: "Start and enable services"
+      service: "name={{ item }} state=started enabled=yes"
+      with_items:
+        - postgresql
+
+    - name: "Create app database"
+      postgresql_db:
+        state: present
+        name: "sonarqube"
+      become: true
+      become_user: postgres
+
+    - name: "Create db user"
+      postgresql_user:
+        state: present
+        name: "sonar"
+        password: "password"
+      become: true
+      become_user: postgres
+
+    - name: "Grant db user access to app db"
+      postgresql_privs:
+        type: database
+        database: "sonarqube"
+        roles: "sonar"
+        grant_option: no
+        privs: all
+      become: true
+      become_user: postgres
+
+- name: Install Java 17
+  hosts: localhost
+  roles:
+    - role: ansible-role-java
+      when: "ansible_os_family == 'Debian'"
+      java_packages:
+        - openjdk-17-jdk
+
+- name: Install sonarqube
+  hosts: localhost
+  roles:
+    - ansible-role-sonarqube
+
+- name: Install gitlab-runner
+  hosts: localhost
+  roles:
+    - ansible-role-gitlab-runner
