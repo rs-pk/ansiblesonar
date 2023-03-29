@@ -3,3 +3,9 @@
   hosts: localhost
   roles:
     - ansible-role-artifactory
+
+
+- name: Install jfrog-xray-docker
+  hosts: localhost
+  roles:
+    - ansible-docker-jfrog-xray
