@@ -19,7 +19,7 @@
     shell: /bin/bash
     generate_ssh_key: yes
     ssh_key_bits: 4096
-    password: "{{ vaulted_docker_artifactory_artifactory_user_password | password_hash('sha512') }}"
+    password: "cde3CDE#1234"
 
 - name: create the artifactory folders
   become: yes
