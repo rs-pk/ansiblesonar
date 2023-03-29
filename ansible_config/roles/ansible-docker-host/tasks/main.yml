@@ -1,0 +1,160 @@
+---
+# tasks file for docker-host
+# https://docs.docker.com/engine/installation/linux/docker-ce/centos/
+
+- name: remove ansible
+  # Ansible is used and provided by pip, not the system package.
+  become: yes
+  ansible.builtin.dnf:
+    state: absent
+    name: ansible
+
+- name: remove other conflicting packages
+  become: yes
+  ansible.builtin.dnf:
+    state: absent
+    name:
+      - podman
+      - runc
+      - containers-common
+  when: ansible_distribution == "CentOS" and ansible_distribution_major_version > '7'
+
+- name: remove PyYAML
+  become: yes
+  ansible.builtin.dnf:
+    state: absent
+    name: python-yaml
+
+- name: install pip PyYAML
+  ansible.builtin.pip:
+    name: PyYAML
+    state: latest
+    umask: "0022"
+
+- name: install pip docker-compose 1.24.1
+  # Version 1.25.0 doesn't install with python2.
+  ansible.builtin.pip:
+    name: docker-compose==1.24.1
+    umask: "0022"
+  when: ansible_distribution == "CentOS" and ansible_distribution_major_version <= '7'
+
+- name: install pip docker latest
+  ansible.builtin.pip:
+    name: docker
+    state: latest
+  when: ansible_distribution == "CentOS" and ansible_distribution_major_version > '7'
+
+- name: install pip docker latest (become)
+  become: yes
+  ansible.builtin.pip:
+    name: docker
+    state: latest
+  when: ansible_distribution == "CentOS" and ansible_distribution_major_version > '7'
+
+- name: install pip docker-compose latest
+  ansible.builtin.pip:
+    name: docker-compose
+    state: latest
+    umask: "0022"
+  when: ansible_distribution == "CentOS" and ansible_distribution_major_version > '7'
+
+- name: install pip docker-compose latest (become)
+  become: yes
+  ansible.builtin.pip:
+    name: docker-compose
+    state: latest
+    umask: "0022"
+  when: ansible_distribution == "CentOS" and ansible_distribution_major_version > '7'
+
+- name: disable firewalld
+  # https://docs.docker.com/v1.6/installation/centos/
+  become: yes
+  ansible.builtin.service:
+    name: firewalld
+    state: stopped
+    enabled: no
+  notify:
+    - restart docker
+
+- name: install docker dependencies
+  become: yes
+  ansible.builtin.dnf:
+    name:
+      - yum-utils
+      - device-mapper-persistent-data
+      - lvm2
+    state: latest
+
+- name: add docker repository
+  become: yes
+  ansible.builtin.yum_repository:
+    name: docker-ce-stable
+    description: public stable docker-ce repo
+    baseurl: "{{ docker_host_ce_repo }}"
+    gpgcheck: yes
+    gpgkey: "{{ docker_host_ce_repo_gpgkey }}"
+
+- name: install docker-ce
+  become: yes
+  ansible.builtin.dnf:
+    name: docker-ce
+    state: present
+  notify:
+    - restart docker
+
+- name: ensure docker is enabled at boot
+  become: yes
+  ansible.builtin.service:
+    name: docker
+    enabled: yes
+
+- name: create docker group
+  become: yes
+  ansible.builtin.group:
+    name: docker
+    state: present
+  notify:
+    - restart docker
+
+- name: add current user to docker group
+  become: yes
+  ansible.builtin.user:
+    name: "{{ ansible_user_id }}"
+    groups: wheel,docker
+    append: yes
+
+- name: add root user to docker group
+  become: yes
+  ansible.builtin.user:
+    name: "{{ ansible_user_id }}"
+    groups: wheel,docker
+    append: yes
+
+- name: check for config file
+  ansible.builtin.stat: path=/etc/docker/daemon.json
+  register: p
+
+- name: start the service if nothing has been configured
+  # If you configure docker before letting it run once, a start after configure will fail.
+  become: yes
+  ansible.builtin.service:
+    name: docker
+    state: started
+  when: not p.stat.exists
+
+- name: create /etc/docker/
+  become: yes
+  ansible.builtin.file:
+    path: /etc/docker/
+    state: directory
+    mode: 0755
+
+- name: configure docker
+  become: yes
+  ansible.builtin.template:
+    src: templates/daemon.json.j2
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+  notify:
+    - restart docker

@@ -1,0 +1,9 @@
+{
+  "data-root": "{{ docker_host_data_root }}",
+  "storage-opts": [{{ docker_host_storage_opts }}],
+
+  {% if docker_host_registry_mirror is defined %}"registry-mirrors": ["{{ docker_host_registry_mirror }}"],{% endif %}
+  {% if docker_host_default_address_pools is defined %}"default-address-pools": {{ docker_host_default_address_pools }},{% endif %}
+
+  "insecure-registries": [ {% if docker_host_insecure_registry is defined %}"{{ docker_host_insecure_registry }}"{% endif %} ]
+}

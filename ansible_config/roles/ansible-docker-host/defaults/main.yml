@@ -1,0 +1,7 @@
+---
+# defaults file for docker-host
+
+docker_host_data_root: "/var/lib/docker"
+docker_host_ce_repo: "https://download.docker.com/linux/centos/$releasever/$basearch/stable"
+docker_host_ce_repo_gpgkey: "https://download.docker.com/linux/centos/gpg"
+docker_host_storage_opts: ""
