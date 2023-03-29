@@ -1,0 +1,4 @@
+---
+# defaults file for docker-jfrog-xray
+
+docker_jfrog_xray_download_host: https://releases.jfrog.io   # The host to download the docker-compose release from.

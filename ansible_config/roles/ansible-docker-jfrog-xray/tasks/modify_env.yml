@@ -1,0 +1,39 @@
+---
+
+# Treat modifying the .env file like a black box. It will help keep the main.yml file simpler.
+# All configurable parts in the docker compose files shall be contained in the .env file.
+# Docker compose files should refer to the variables and not have the values in them directly, just to maintain a uniform approach.
+
+- name: replace ROOT_DATA_DIR in .env
+  ansible.builtin.lineinfile:
+    path: "{{ docker_jfrog_xray_docker_compose_folder }}/.env"
+    regexp: 'ROOT_DATA_DIR=.*'
+    line: "ROOT_DATA_DIR={{ docker_jfrog_xray_data_dir }}"
+
+- name: replace HOST_ID in .env
+  ansible.builtin.lineinfile:
+    path: "{{ docker_jfrog_xray_docker_compose_folder }}/.env"
+    regexp: 'HOST_ID=.*'
+    line: "HOST_ID={{ inventory_hostname }}"
+
+- name: replace JF_THIRD_PARTY_BIND_IP in .env
+  ansible.builtin.lineinfile:
+    path: "{{ docker_jfrog_xray_docker_compose_folder }}/.env"
+    regexp: 'JF_THIRD_PARTY_BIND_IP=.*'
+    line: "JF_THIRD_PARTY_BIND_IP={{ ansible_default_ipv4.address }}"
+
+- name: add POSTGRES_PASSWORD in .env
+  ansible.builtin.lineinfile:
+    path: "{{ docker_jfrog_xray_docker_compose_folder }}/.env"
+    line: "POSTGRES_PASSWORD={{ docker_jfrog_xray_postgres_password }}"
+    insertafter: EOF
+
+- name: get .env contents
+  ansible.builtin.slurp:
+    src: "{{ docker_jfrog_xray_docker_compose_folder }}/.env"
+  register: docker_jfrog_xray_slurp_env
+
+- name: save the xray user name
+  ansible.builtin.set_fact:
+    docker_jfrog_xray_user: "{{ docker_jfrog_xray_slurp_env['content'] | b64decode | regex_findall('XRAY_USER=(.+)') | first }}"
+    docker_jfrog_xray_router_entrypoints_externalport: "{{ docker_jfrog_xray_slurp_env['content'] | b64decode | regex_findall('JF_ROUTER_ENTRYPOINTS_EXTERNALPORT=(.+)') | first }}"

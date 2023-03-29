@@ -1,0 +1,9 @@
+---
+
+docker_jfrog_xray_docker_compose_folder: "{{ docker_jfrog_xray_data_dir }}/docker_compose"
+docker_jfrog_xray_postgres_data_dir: "{{ docker_jfrog_xray_data_dir }}/var/data/postgres/data"
+docker_jfrog_xray_postgres_backup_dir: "{{ docker_jfrog_xray_data_dir }}/postgres.bak"
+docker_jfrog_xray_system_yaml_path: "{{ docker_jfrog_xray_data_dir }}/var/etc/system.yaml"
+docker_jfrog_xray_system_yaml_template_path: "{{ docker_jfrog_xray_docker_compose_folder }}/templates/system.basic-template.yaml"
+docker_jfrog_xray_postgres_container_name: xray_postgres
+docker_jfrog_xray_postgres_user: xray

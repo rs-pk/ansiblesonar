@@ -1,0 +1,88 @@
+---
+
+# I tried using the JF_ environment variables, but it wasn't enough.
+# There were values missing from the system.yaml file that were populated by config.sh that I wasn't aware of.
+# Also, the JF_ environment variables would need to be added to every container so the values would be read and honored.
+# It was just too much to deal with. I originally thought I could just add the JF_ variables to the .env file and that
+# would populate them into each container, but the .env file only works for variable substitutions in the docker compose
+# file itself, which is only helpful if I list each variable inside the docker compose. I was doing that for a couple variables
+# on the router container, but now that I know I need many more variables and on all the containers, it just makes sense
+# to bite the bullet and figure out how to manipulate the system.yaml file.
+
+- name: check for the system.yaml file
+  become: yes
+  ansible.builtin.stat:
+    path: "{{ docker_jfrog_xray_system_yaml_path }}"
+  register: docker_jfrog_xray_system_yaml_stat
+
+- name: copy the system.yaml template
+  become: yes
+  ansible.builtin.copy:
+    src: "{{ docker_jfrog_xray_system_yaml_template_path }}"
+    dest: "{{ docker_jfrog_xray_system_yaml_path }}"
+    remote_src: yes
+    owner: "{{ docker_jfrog_xray_user }}"
+    group: "{{ docker_jfrog_xray_user }}"
+  when: not docker_jfrog_xray_system_yaml_stat.stat.exists
+
+- name: get the system.yaml contents
+  become: yes
+  ansible.builtin.slurp:
+    src: "{{ docker_jfrog_xray_system_yaml_path }}"
+  register: docker_jfrog_xray_system_yaml_slurp
+
+- name: convert the slurped system.yaml to yaml
+  ansible.builtin.set_fact:
+    docker_jfrog_xray_system_yaml: "{{ docker_jfrog_xray_system_yaml_slurp['content'] | b64decode | from_yaml }}"
+
+- name: create the yaml structure to be added
+  ansible.builtin.set_fact:
+    docker_jfrog_xray_system_yaml_addition:
+      shared:
+        security:
+          joinKey: "{{ docker_jfrog_xray_shared_security_joinkey }}"
+        node:
+          ip: "{{ ansible_default_ipv4.address }}"
+          id: "{{ inventory_hostname }}"
+          name: "{{ inventory_hostname }}"
+        database:
+          type: postgresql
+          driver: org.postgresql.Driver
+          url: "postgres://{{ ansible_default_ipv4.address }}:5432/xraydb?sslmode=disable"
+          username: "{{ docker_jfrog_xray_postgres_user }}"
+          password: "{{ docker_jfrog_xray_postgres_password }}"
+        rabbitMq:
+          url: "amqp://{{ ansible_default_ipv4.address }}:5672/"
+        jfrogUrl: "{{ docker_jfrog_xray_shared_jfrog_url }}"
+      router:
+        entrypoints:
+          externalPort: "{{ docker_jfrog_xray_router_entrypoints_externalport }}"
+
+- name: combine the custom provided yaml structure with the system.yaml
+  ansible.builtin.set_fact:
+    docker_jfrog_xray_system_yaml_new: "{{ docker_jfrog_xray_system_yaml | combine(docker_jfrog_xray_system_yaml_custom, recursive=true) }}"
+  when: docker_jfrog_xray_system_yaml_custom is defined
+
+- name: combine the additional yaml structure with the system.yaml
+  ansible.builtin.set_fact:
+    docker_jfrog_xray_system_yaml_new: "{{ docker_jfrog_xray_system_yaml_new | combine(docker_jfrog_xray_system_yaml_addition, recursive=true) }}"
+
+- name: write the system.yaml back out
+  become: yes
+  ansible.builtin.copy:
+    content: "{{ docker_jfrog_xray_system_yaml_new | to_nice_yaml }}"
+    dest: "{{ docker_jfrog_xray_system_yaml_path }}"
+    owner: "{{ docker_jfrog_xray_user }}"
+    group: "{{ docker_jfrog_xray_user }}"
+
+# For whatever reason, the router.entrypoints.externalPort value is output as a string with single quotes around it.
+# The jfrog containers choke on it and say...
+#   .router.entrypoints.externalPort value is of wrong data type. Correct type should be !!int
+#   yaml validation failed
+# To get around this, we'll just do a dumb string replacement on the file.
+- name: modify the system.yaml to set the externalport as an int
+  become: yes
+  ansible.builtin.replace:
+    path: "{{ docker_jfrog_xray_system_yaml_path }}"
+    regexp: "externalPort: '{{ docker_jfrog_xray_router_entrypoints_externalport }}'"
+    replace: "externalPort: {{ docker_jfrog_xray_router_entrypoints_externalport }}"

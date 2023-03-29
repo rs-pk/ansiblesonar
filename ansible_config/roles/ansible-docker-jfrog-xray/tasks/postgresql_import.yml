@@ -1,0 +1,34 @@
+---
+
+- name: copy the data dump into the container
+  become: yes
+  ansible.builtin.shell:
+    cmd: docker cp {{ docker_jfrog_xray_docker_compose_folder }}/dump.sql {{ docker_jfrog_xray_postgres_container_name }}:/tmp
+    executable: /bin/bash
+
+- name: wait 15 seconds to ensure the database has had time to startup
+  pause:
+    seconds: 15
+
+- name: import the postgres data
+  become: yes
+  ansible.builtin.shell:
+    cmd: docker exec {{ docker_jfrog_xray_postgres_container_name }} sh -c 'psql -U {{ docker_jfrog_xray_postgres_user }} -d {{ docker_jfrog_xray_postgres_db_name }} < /tmp/dump.sql'
+    executable: /bin/bash
+
+- name: wait 15 seconds to ensure the changes have all been imported
+  pause:
+    seconds: 15
+
+- name: delete the data dump file from the docker compose
+  become: yes
+  ansible.builtin.file:
+    path: "{{ docker_jfrog_xray_docker_compose_folder }}/dump.sql"
+    state: absent
+
+- name: delete the backup of the postgresql mapped volume
+  become: yes
+  ansible.builtin.file:
+    path: "{{ docker_jfrog_xray_postgres_backup_dir }}"
+    state: absent
+

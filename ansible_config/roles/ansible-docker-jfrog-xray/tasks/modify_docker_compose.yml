@@ -1,0 +1,70 @@
+---
+
+# Treat modifying the docker-compose.yaml file like a black box. It will help keep the main.yml file simpler.
+
+- name: get docker-compose.yaml contents
+  ansible.builtin.slurp:
+    src: "{{ docker_jfrog_xray_docker_compose_folder }}/docker-compose.yaml"
+  register: docker_jfrog_xray_slurp_docker_compose
+
+- name: convert the slurped docker-compose to yaml
+  ansible.builtin.set_fact:
+    docker_jfrog_xray_docker_compose_yaml: "{{ docker_jfrog_xray_slurp_docker_compose['content'] | b64decode | from_yaml }}"
+    docker_jfrog_xray_docker_compose_services_yaml: {}
+
+- name: remove the mongodb service
+  ansible.builtin.set_fact:
+    docker_jfrog_xray_docker_compose_services_yaml: "{{ docker_jfrog_xray_docker_compose_services_yaml | combine({item.key: item.value})}}"
+  when: "{{ item.key not in ['mongodb'] }}"
+  with_dict: "{{ docker_jfrog_xray_docker_compose_yaml['services'] }}"
+
+- name: peice together the cleaned docker-compose yaml
+  ansible.builtin.set_fact:
+    docker_jfrog_xray_docker_compose_yaml_new:
+      version: "{{ docker_jfrog_xray_docker_compose_yaml['version'] }}"
+      services: "{{ docker_jfrog_xray_docker_compose_services_yaml }}"
+
+- name: get existing router volumes
+  ansible.builtin.set_fact:
+    docker_jfrog_xray_docker_compose_xray_router_volumes_list: "{{ docker_jfrog_xray_docker_compose_yaml_new['services']['router']['volumes'] }}"
+    docker_jfrog_xray_docker_compose_xray_analysis_volumes_list: "{{ docker_jfrog_xray_docker_compose_yaml_new['services']['xray-analysis']['volumes'] }}"
+    docker_jfrog_xray_docker_compose_xray_indexer_volumes_list: "{{ docker_jfrog_xray_docker_compose_yaml_new['services']['xray-indexer']['volumes'] }}"
+    docker_jfrog_xray_docker_compose_xray_persist_volumes_list: "{{ docker_jfrog_xray_docker_compose_yaml_new['services']['xray-persist']['volumes'] }}"
+    docker_jfrog_xray_docker_compose_xray_server_volumes_list: "{{ docker_jfrog_xray_docker_compose_yaml_new['services']['xray-server']['volumes'] }}"
+  when: docker_jfrog_xray_certs_to_trust is defined
+
+- name: add certs to the existing router volumes list
+  ansible.builtin.set_fact:
+    docker_jfrog_xray_docker_compose_xray_router_volumes_list: "{{ docker_jfrog_xray_docker_compose_xray_router_volumes_list + [ '${ROOT_DATA_DIR}/var/certs/' + item.path | basename + ':/etc/ssl/certs/' + item.path | basename ] }}"
+    docker_jfrog_xray_docker_compose_xray_analysis_volumes_list: "{{ docker_jfrog_xray_docker_compose_xray_analysis_volumes_list + [ '${ROOT_DATA_DIR}/var/certs/' + item.path | basename + ':/etc/ssl/certs/' + item.path | basename ] }}"
+    docker_jfrog_xray_docker_compose_xray_indexer_volumes_list: "{{ docker_jfrog_xray_docker_compose_xray_indexer_volumes_list + [ '${ROOT_DATA_DIR}/var/certs/' + item.path | basename + ':/etc/ssl/certs/' + item.path | basename ] }}"
+    docker_jfrog_xray_docker_compose_xray_persist_volumes_list: "{{ docker_jfrog_xray_docker_compose_xray_persist_volumes_list + [ '${ROOT_DATA_DIR}/var/certs/' + item.path | basename + ':/etc/ssl/certs/' + item.path | basename ] }}"
+    docker_jfrog_xray_docker_compose_xray_server_volumes_list: "{{ docker_jfrog_xray_docker_compose_xray_server_volumes_list + [ '${ROOT_DATA_DIR}/var/certs/' + item.path | basename + ':/etc/ssl/certs/' + item.path | basename ] }}"
+  loop: "{{ docker_jfrog_xray_certs_to_trust }}"
+  when: docker_jfrog_xray_certs_to_trust is defined
+
+- name: place the volumes into the docker-compose structure
+  ansible.builtin.set_fact:
+    docker_jfrog_xray_docker_compose_xray_new_volumes:
+      services:
+        router:
+          volumes: "{{ docker_jfrog_xray_docker_compose_xray_router_volumes_list }}"
+        xray-analysis:
+          volumes: "{{ docker_jfrog_xray_docker_compose_xray_analysis_volumes_list }}"
+        xray-indexer:
+          volumes: "{{ docker_jfrog_xray_docker_compose_xray_indexer_volumes_list }}"
+        xray-persist:
+          volumes: "{{ docker_jfrog_xray_docker_compose_xray_persist_volumes_list }}"
+        xray-server:
+          volumes: "{{ docker_jfrog_xray_docker_compose_xray_server_volumes_list }}"
+  when: docker_jfrog_xray_certs_to_trust is defined
+
+- name: combine the new volumes into the docker compose
+  ansible.builtin.set_fact:
+    docker_jfrog_xray_docker_compose_yaml_new: "{{ docker_jfrog_xray_docker_compose_yaml_new | combine(docker_jfrog_xray_docker_compose_xray_new_volumes, recursive=true) }}"
+  when: docker_jfrog_xray_certs_to_trust is defined
+
+- name: write the docker-compose.yaml back out
+  ansible.builtin.copy:
+    content: "{{ docker_jfrog_xray_docker_compose_yaml_new | to_nice_yaml }}"
+    dest: "{{ docker_jfrog_xray_docker_compose_folder }}/docker-compose.yaml"

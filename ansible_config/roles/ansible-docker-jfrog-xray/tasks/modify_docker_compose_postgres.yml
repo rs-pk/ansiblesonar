@@ -1,0 +1,34 @@
+---
+
+# Treat modifying the docker-compose-postgres.yaml file like a black box. It will help keep the main.yml and postgresql_migrate.yml files simpler.
+
+- name: reference the postgres password variable from the .env file
+  ansible.builtin.replace:
+    path: "{{ docker_jfrog_xray_docker_compose_folder }}/docker-compose-postgres.yaml"
+    regexp: "__REPLACE_POSTGRES_PASSWORD__"
+    replace: "${POSTGRES_PASSWORD}"
+
+- name: get docker-compose-postgres.yaml contents
+  slurp:
+    src: "{{ docker_jfrog_xray_docker_compose_folder }}/docker-compose-postgres.yaml"
+  register: docker_jfrog_xray_slurp_docker_compose_postgres
+
+- name: convert the slurped docker-compose to yaml
+  ansible.builtin.set_fact:
+    docker_jfrog_xray_docker_compose_postgres_yaml: "{{ docker_jfrog_xray_slurp_docker_compose_postgres['content'] | b64decode | from_yaml }}"
+
+- name: get the postgres db name
+  ansible.builtin.set_fact:
+    docker_jfrog_xray_postgres_db_name: "{{ item | regex_search('POSTGRES_DB=(.+)', '\\1') | first }}"
+  with_items: "{{ docker_jfrog_xray_docker_compose_postgres_yaml['services']['postgres']['environment'] }}"
+  when: '"POSTGRES_DB=" in item'
+
+- name: get the postgres user name
+  ansible.builtin.set_fact:
+    docker_jfrog_xray_postgres_user: "{{ item | regex_search('POSTGRES_USER=(.+)', '\\1') | first }}"
+  with_items: "{{ docker_jfrog_xray_docker_compose_postgres_yaml['services']['postgres']['environment'] }}"
+  when: '"POSTGRES_USER=" in item'
+
+- name: get the postgres container name
+  ansible.builtin.set_fact:
+    docker_jfrog_xray_postgres_container_name: "{{ docker_jfrog_xray_docker_compose_postgres_yaml['services']['postgres']['container_name'] }}"
