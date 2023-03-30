@@ -1,5 +1,5 @@
 		sudo apt update -y
-		sudo apt-get install jq
+		sudo apt-get install jq -y
 		sudo apt install docker.io
 		sudo systemctl start docker
 		sudo systemctl enable docker
