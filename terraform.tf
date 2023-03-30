@@ -10,18 +10,18 @@ terraform {
 
 provider "azurerm" {
   features {}
-  subscription_id     = "9d8f5b98-ffb7-4255-a0d1-7b3faaf6424a"
+  subscription_id     = "21bf6cf4-71f5-4ad4-b2b7-04f49a5f6d2b"
 }
 
 locals {
   location       = "canadacentral"
-  resource_group = "SonarQube-RG"
-  subscription_id     = "9d8f5b98-ffb7-4255-a0d1-7b3faaf6424a"
-  vnet_resource_group = "lsPccCoreServicesCommon-rg"
-  vm1_prefix          = "SonarQube-Instance"
+  resource_group = "new-RG"
+  subscription_id     = "21bf6cf4-71f5-4ad4-b2b7-04f49a5f6d2b"
+  vnet_resource_group = "test-rg"
+  vm1_prefix          = "l22 "
   # vm2_prefix          = "linux2"
-  vnet_name           = "lsPccCoreServicesCommon-vnet"
-  vm_subnet_name      = "gitlab"
+  vnet_name           = "testvnet"
+  vm_subnet_name      = "subnet2"
   vm_size             = "Standard D2as_v5"
   vm_admin_username   = "azureuser"
  
@@ -30,6 +30,14 @@ locals {
 resource "azurerm_resource_group" "new-rg" {
   name     = local.resource_group
   location = local.location
+}
+
+resource "azurerm_public_ip" "first-vm-pip" {
+  name                = "${local.vm1_prefix}-pip"
+  location            = local.location
+  resource_group_name = local.resource_group
+  allocation_method   = "Static"
+  depends_on = [azurerm_resource_group.new-rg]
 }
 
 resource "azurerm_network_interface" "first-vm-nic" {
@@ -44,6 +52,7 @@ resource "azurerm_network_interface" "first-vm-nic" {
     name                          = "${local.vm1_prefix}-config"
     subnet_id                     = "/subscriptions/${local.subscription_id}/resourceGroups/${local.vnet_resource_group}/providers/Microsoft.Network/virtualNetworks/${local.vnet_name}/subnets/${local.vm_subnet_name}"
     private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.first-vm-pip.id
   }
 }
 
@@ -79,7 +88,7 @@ resource "azurerm_linux_virtual_machine" "first-vm" {
     name                 = "${local.vm1_prefix}-osdisk"
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
-    disk_size_gb         = "64"
+    disk_size_gb         = "500"
   }
 
 }
@@ -93,8 +102,8 @@ resource "azurerm_linux_virtual_machine" "first-vm" {
 
    settings = <<SETTINGS
          {
-         "fileUris": ["https://raw.githubusercontent.com/rs-pk/ansiblesonar/main/setup.sh"],
-         "commandToExecute": "sh setup.sh"
+         "fileUris": ["https://raw.githubusercontent.com/rs-pk/ansiblesonar/main/setup1.sh"],
+         "commandToExecute": "sh setup1.sh"
      }
  SETTINGS
  }
