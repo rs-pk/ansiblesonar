@@ -1,10 +1,10 @@
 		sudo apt update -y
 		sudo apt-get install jq -y
-		sudo apt install docker.io
+		sudo apt install docker.io -y
 		sudo systemctl start docker
 		sudo systemctl enable docker
 		sudo usermod -aG docker azureuser
-		sudo apt install docker-compose
+		sudo apt install docker-compose -y
 		curl 'https://releases.jfrog.io/artifactory/jfrog-prox/org/artifactory/pro/docker/jfrog-platform-trial-prox/[RELEASE]/jfrog-platform-trial-prox-[RELEASE]-compose.tar.gz' -L -o jfrog-compose-installer.tar.gz -g
 		tar -xvzf jfrog-compose-installer.tar.gz
 		cd jfrog-platform-trial-pro*
