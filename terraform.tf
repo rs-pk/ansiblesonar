@@ -18,7 +18,7 @@ locals {
   resource_group = "new-RG"
   subscription_id     = "21bf6cf4-71f5-4ad4-b2b7-04f49a5f6d2b"
   vnet_resource_group = "test-rg"
-  vm1_prefix          = "l22 "
+  vm1_prefix          = "l22"
   # vm2_prefix          = "linux2"
   vnet_name           = "testvnet"
   vm_subnet_name      = "subnet2"
