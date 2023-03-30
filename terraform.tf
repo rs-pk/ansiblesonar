@@ -17,12 +17,12 @@ locals {
   location       = "canadacentral"
   resource_group = "new-RG"
   subscription_id     = "21bf6cf4-71f5-4ad4-b2b7-04f49a5f6d2b"
-  vnet_resource_group = "test-rg"
+  vnet_resource_group = "test"
   vm1_prefix          = "l22"
   # vm2_prefix          = "linux2"
   vnet_name           = "testvnet"
   vm_subnet_name      = "subnet2"
-  vm_size             = "Standard D2as_v5"
+  vm_size             = "Standard_D8s_v3"
   vm_admin_username   = "azureuser"
  
 }
@@ -32,13 +32,6 @@ resource "azurerm_resource_group" "new-rg" {
   location = local.location
 }
 
-resource "azurerm_public_ip" "first-vm-pip" {
-  name                = "${local.vm1_prefix}-pip"
-  location            = local.location
-  resource_group_name = local.resource_group
-  allocation_method   = "Static"
-  depends_on = [azurerm_resource_group.new-rg]
-}
 
 resource "azurerm_network_interface" "first-vm-nic" {
   name                 = "${local.vm1_prefix}-nic"
@@ -52,7 +45,6 @@ resource "azurerm_network_interface" "first-vm-nic" {
     name                          = "${local.vm1_prefix}-config"
     subnet_id                     = "/subscriptions/${local.subscription_id}/resourceGroups/${local.vnet_resource_group}/providers/Microsoft.Network/virtualNetworks/${local.vnet_name}/subnets/${local.vm_subnet_name}"
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.first-vm-pip.id
   }
 }
 
