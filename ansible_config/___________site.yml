@@ -1,0 +1,15 @@
+
+- name: Install ansible-role-artifactory
+  hosts: localhost
+  roles:
+    - ansible-role-artifactory
+
+# - name: Install jfrog-ansible-docker-host
+#   hosts: localhost
+#   roles:
+#     - ansible-docker-host
+
+# - name: Install jfrog-ansible-docker-jfrog-xray
+#   hosts: localhost
+#   roles:
+#     - ansible-docker-jfrog-xray
