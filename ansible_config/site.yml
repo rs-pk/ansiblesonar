@@ -58,7 +58,7 @@
 - name: Install sonarqube
   hosts: localhost
   roles:
-    - ansible-role-sonarqube
+    - ansible-role-sonarqube-nginx
 
 # - name: Install gitlab-runner
 #   hosts: localhost
