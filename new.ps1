@@ -1,11 +1,21 @@
-		# #sudo apt-add-repository ppa:ansible/ansible -y
-		# sudo apt update -y
-		# sudo apt install ansible -y
-		# sudo apt-get install zip unzip
-		# sudo apt install net-tools
-		# sudo ansible-galaxy collection install jfrog.ansible
-		# sudo git clone https://github.com/rs-pk/ansiblesonar.git
-		# # sudo ansible-playbook ansiblesonar/ansible_config/site.yml
-		# sudo ansible-playbook -i ansiblesonar/ansible_config/inventory.yml ansiblesonar/ansible_config/playbook.yml
+Get-Disk |
 
-		$PSVersionTable
+Where partitionstyle -eq ‘raw’ |
+
+Initialize-Disk -PartitionStyle MBR -PassThru |
+
+New-Partition -AssignDriveLetter -UseMaximumSize |
+
+Format-Volume -FileSystem NTFS -NewFileSystemLabel “Data” -Confirm:$false 
+
+# Install required modules
+Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+Install-Module pswindowsupdate -force
+Import-Module PSWindowsUpdate -force
+# End installing required modules
+
+#Get list of windows updates to install
+Get-WindowsUpdate
+
+#install the updates
+Install-WindowsUpdate -AcceptAll -install -AutoReboot
