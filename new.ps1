@@ -1,3 +1,6 @@
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force
+
+
 Get-Disk |
 
 Where partitionstyle -eq ‘raw’ |
