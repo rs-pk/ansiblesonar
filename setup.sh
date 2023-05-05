@@ -13,14 +13,11 @@
 
 
 
-		DEVICE_FS=`blkid -o value -s TYPE /sdc`
-		if [ "`echo -n $DEVICE_FS`" == "" ] ; then
-        		mkfs.ext4 /dev/sdc
-		fi
-		mkdir -p /data
+mkfs.ext4 /dev/sdc
+mkdir -p /data
 
-		mount -t ext4 /dev/sdc /data
+mount -t ext4 /dev/sdc /data
 
-		sudo timedatectl set-timezone Asia/Calcutta
-		sudo apt update -y
-		# sudo apt upgarde -y
+timedatectl set-timezone Asia/Calcutta
+apt update -y
+apt upgarde -y
