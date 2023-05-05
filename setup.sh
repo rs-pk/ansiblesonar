@@ -21,6 +21,6 @@
 
 		mount -t ext4 /dev/sdc /data
 
-		timedatectl set-timezone Asia/Calcutta
-		apt update -y
-		apt upgarde -y
+		sudo timedatectl set-timezone Asia/Calcutta
+		sudo apt update -y
+		sudo apt upgarde -y
