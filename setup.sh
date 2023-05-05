@@ -23,4 +23,4 @@
 
 		sudo timedatectl set-timezone Asia/Calcutta
 		sudo apt update -y
-		sudo apt upgarde -y
+		# sudo apt upgarde -y
