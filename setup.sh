@@ -19,6 +19,6 @@
 # mount -t ext4 /dev/sdc /data
 
 # timedatectl set-timezone Asia/Calcutta
-
-sudo apt-get update -y
-sudo apt-get upgarde -y
+sudo -i 
+sudo apt update -y
+sudo apt upgarde -y
