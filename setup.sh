@@ -11,4 +11,3 @@ timedatectl set-timezone Asia/Calcutta
 echo "Updating system..."
 sudo apt-get update -y
 sudo apt-get upgrade -y
-sudo reboot
