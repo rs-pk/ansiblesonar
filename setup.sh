@@ -1,10 +1,10 @@
 #!/bin/bash
 
-mkfs.ext4 /dev/sdc
+mkfs.ext4 /dev/sda
 
 mkdir -p /data
 
-mount -t ext4 /dev/sdc /data
+mount -t ext4 /dev/sda /data
 
 timedatectl set-timezone Asia/Calcutta
 
