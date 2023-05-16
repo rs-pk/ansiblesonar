@@ -1,13 +1,15 @@
 #!/bin/bash
 
-mkfs.ext4 /dev/sdc
+sudo mkfs.ext4 /dev/sdc
 
-mkdir -p /data
+sudo mkdir /data
 
-mount -t ext4 /dev/sdc /data
+sudo su -c "echo '/dev/sdc /data ext4 defaults 0 0' >> /etc/fstab"
 
-timedatectl set-timezone Asia/Calcutta
+sudo mount /data
 
-echo "Updating system..."
+sudo timedatectl set-timezone Asia/Calcutta
+
+sudo echo "Updating system..."
 sudo apt-get update -y
 sudo apt-get upgrade -y

@@ -1,66 +1,51 @@
-# This playbook deploys the whole application stack for a sonar.
 
-- hosts: localhost
-  tasks:
-    # - name: installing repo for Java 8 in Ubuntu
-    #   apt_repository: repo='ppa:openjdk-r/ppa'
-      
-    - name: "Install packages"
-      apt: "name={{ item }} state=present"
-      with_items:
-        - postgresql
-        - postgresql-contrib
-        - python3-pip
-
-    - name: "Install Python packages"
-      pip: "name={{ item }}  state=present"
-      with_items:
-        - psycopg2-binary
-        
-    - name: "Start and enable services"
-      service: "name={{ item }} state=started enabled=yes"
-      with_items:
-        - postgresql
-
-    - name: "Create app database"
-      postgresql_db:
-        state: present
-        name: "sonarqube"
-      become: true
-      become_user: postgres
-
-    - name: "Create db user"
-      postgresql_user:
-        state: present
-        name: "sonar"
-        password: "password"
-      become: true
-      become_user: postgres
-
-    - name: "Grant db user access to app db"
-      postgresql_privs:
-        type: database
-        database: "sonarqube"
-        roles: "sonar"
-        grant_option: no
-        privs: all
-      become: true
-      become_user: postgres
-
-- name: Install Java 17
+- name: Install jfrog-ansible-docker-artifactoryartifactory
   hosts: localhost
   roles:
-    - role: ansible-role-java
-      when: "ansible_os_family == 'Debian'"
-      java_packages:
-        - openjdk-17-jdk
+    - ansible-docker-artifactory
 
-- name: Install sonarqube
+- name: Install jfrog-ansible-docker-host
   hosts: localhost
   roles:
-    - ansible-role-sonarqube
+    - ansible-docker-host
 
-# - name: Install gitlab-runner
-#   hosts: localhost
-#   roles:
-#     - ansible-role-gitlab-runner
+- name: Install jfrog-ansible-docker-jfrog-xray
+  hosts: localhost
+  roles:
+    - ansible-docker-jfrog-xray
+
+
+
+- hosts: artifactory_servers
+  collections:
+    - jfrog.platform
+    - community.general
+  roles:
+    - artifactory
+
+- hosts: postgres_servers
+  collections:
+    - community.postgresql
+    - community.general
+    - jfrog.platform
+  roles:
+    - postgres
+
+- hosts: artifactory_servers
+  collections:
+    - community.general
+    - jfrog.platform
+  serial:
+    - 1
+    - 100%
+  roles:
+    - role: artifactory
+      when: artifactory_enabled | bool
+
+- hosts: xray_servers
+  collections:
+    - community.general
+    - jfrog.platform
+  roles:
+    - role: xray
+      when: xray_enabled | bool
