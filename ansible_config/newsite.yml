@@ -1,0 +1,20 @@
+- name: Install jfrog-ansible-docker-host
+  hosts: localhost
+  roles:
+    - ansible-docker-host
+
+
+- name: Install gitlab-runner
+  hosts: localhost
+  roles:
+    - ansible-role-gitlab-runner
+
+- name: Install terraform
+  hosts: localhost
+  roles:
+    - ansible-role-terraform
+
+- name: Install azurecli
+  hosts: localhost
+  roles:
+    - ansible-role-azurecli
