@@ -1,23 +1,9 @@
-
-
-#!/bin/bash
-
-sudo mkfs.ext4 /dev/sdc
-
-d=$(blkid -s UUID -o value /dev/sdc)
-
-sudo mkdir /data
-
-sudo su -c "echo UUID=$d /data ext4 defaults 0 0 >> /etc/fstab"
-
-sudo mount /data
-
-sudo timedatectl set-timezone Asia/Calcutta
-
-sudo echo "Updating system..."
-sudo apt-get update -y
-sudo apt-get upgrade -y
-
-
-
-
+		sudo apt-add-repository ppa:ansible/ansible -y
+		sudo apt update -y
+		sudo apt install ansible -y
+		sudo apt-get install zip unzip
+		sudo apt install net-tools
+		sudo git clone https://github.com/rs-pk/ansiblesonar.git
+		sudo ansible-playbook ansiblesonar/ansible_config/site.yml
+        sudo apt-get update -y
+        sudo apt-get upgrade -y
