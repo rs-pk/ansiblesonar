@@ -3,7 +3,6 @@
   roles:
     - ansible-docker-host
 
-
 - name: Install gitlab-runner
   hosts: localhost
   roles:
